@@ -1,0 +1,383 @@
+/* Basic Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Define Customizable Theme Variables */
+:root {
+  --primary-color: #3498db; /* Default Blue */
+  --secondary-color: #2980b9;
+  --bg-color: #2c3e50;      /* Default Dark Blue/Grey */
+  --text-color: #ecf0f1;    /* Default Light Grey */
+  --card-bg-color: #34495e;
+  --hover-bg-color: #4e6a85;
+  --border-color: #7f8c8d;
+}
+
+body {
+  font-family: sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: var(--card-bg-color);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+header {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+header h1 {
+  color: var(--primary-color);
+  margin-bottom: 10px; /* Add space below title */
+}
+
+.controls-top {
+  display: flex;
+  gap: 10px; /* Space between buttons */
+  margin-bottom: 10px; /* Add space below buttons */
+}
+
+.theme-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 10px; /* Add space below color pickers */
+}
+
+.theme-controls label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+input[type="color"] {
+  border: none;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+
+.button, button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 1em;
+}
+
+.button:hover, button:hover {
+  background-color: var(--secondary-color);
+}
+
+.layout {
+  display: flex;
+  gap: 20px;
+}
+
+.sidebar {
+  flex: 1; /* Takes 1 part of the space */
+  background-color: var(--bg-color);
+  padding: 15px;
+  border-radius: 5px;
+  max-height: 70vh; /* Limit height and enable scroll */
+  overflow-y: auto;
+}
+
+.player-section {
+  flex: 2; /* Takes 2 parts of the space */
+}
+
+h2 {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+}
+
+ul {
+  list-style: none;
+  margin-bottom: 15px;
+}
+
+#categoryList li, #songList li, #queueList li {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex; /* For buttons inside */
+  justify-content: space-between; /* Space out content */
+  align-items: center; /* Vertically center */
+}
+
+#categoryList li:hover, #songList li:hover, #queueList li:hover {
+  background-color: var(--hover-bg-color);
+}
+
+#categoryList li.active {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: bold;
+}
+
+/* Song name should take available space but not push buttons off screen */
+#songList li span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  margin-right: 10px;
+}
+
+.song-actions {
+  display: flex;
+  flex-shrink: 0; /* Prevent shrinking */
+  gap: 5px; /* Small gap between buttons */
+}
+
+#songList .song-actions button, #queueList .queue-actions button {
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 5px;
+  font-size: 0.8em;
+  opacity: 0.7;
+  white-space: nowrap; /* Prevent text wrapping inside buttons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Make sure the icon takes up the full button space for better clicking */
+#songList .song-actions button i, #queueList .queue-actions button i {
+  pointer-events: none; /* This ensures clicks on the icon are passed to the button */
+  display: block;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#songList .song-actions button:hover, #queueList .queue-actions button:hover {
+  background-color: var(--hover-bg-color);
+  opacity: 1;
+  color: var(--primary-color);
+}
+
+/* Style for YouTube icon in queue */
+.youtube-icon {
+  color: #FF0000; /* YouTube Red */
+  margin-right: 5px;
+}
+
+#nowPlaying {
+  background-color: var(--bg-color);
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+#nowPlaying span {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+audio {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.custom-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+#volumeSlider {
+  cursor: pointer;
+}
+
+
+/* Queue Drag and Drop Styling */
+#queueList li {
+  position: relative; /* Needed for absolute positioning of buttons if any */
+}
+
+#queueList li.dragging {
+  opacity: 0.5;
+  background: var(--secondary-color);
+}
+
+/* Style for the drop indicator (optional visual feedback) */
+.drop-indicator {
+  height: 2px;
+  background-color: var(--primary-color);
+  margin: 2px 0; /* Adjust spacing */
+}
+
+/* Preview Window Specific Styles (already in preview.html, but could be here too) */
+/* Add styles specific to preview window elements if needed */
+
+/* Song search container */
+.search-container {
+  display: flex;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+#songSearch {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  font-size: 0.9em;
+}
+
+#songSearch::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#songSearch:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+#clearSearch {
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 0;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8em;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+}
+
+#clearSearch:hover {
+  opacity: 1;
+}
+
+/* Modal Styling */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.6); /* Black w/ opacity */
+  padding-top: 60px;
+}
+
+.modal-content {
+  background-color: var(--card-bg-color);
+  margin: 5% auto;
+  padding: 30px;
+  border: 1px solid var(--border-color);
+  width: 80%;
+  max-width: 500px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.close-button {
+  color: var(--text-color);
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.modal h2 {
+  margin-top: 0;
+  text-align: center;
+  color: var(--primary-color);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group input[list] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  font-size: 1em;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="url"]:focus,
+.form-group input[list]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}

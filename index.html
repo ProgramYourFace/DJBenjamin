@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Benjamin</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Music Player</h1>
+            <div class="controls-top">
+                <label for="folderInput" class="button">Select Music Folder</label>
+                <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+                <button id="addYoutubeRequest">Add YouTube Request</button>
+                <button id="openPreview">Open Preview Window</button>
+            </div>
+            <div class="theme-controls">
+                <label>Primary: <input type="color" id="primaryColor" value="#3498db"></label>
+                <label>Background: <input type="color" id="bgColor" value="#2c3e50"></label>
+                <label>Text: <input type="color" id="textColor" value="#ecf0f1"></label>
+            </div>
+        </header>
+
+        <main class="layout">
+            <aside class="sidebar">
+                <h2>Categories</h2>
+                <ul id="categoryList">
+                    </ul>
+                <h2>Songs</h2>
+                <div class="search-container">
+                    <input type="text" id="songSearch" placeholder="Search songs..." />
+                    <button id="clearSearch" title="Clear search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <ul id="songList">
+                    </ul>
+            </aside>
+
+            <section class="player-section">
+                <h2>Now Playing</h2>
+                <div id="nowPlaying">
+                    <p>Song: <span id="currentSong">None</span></p>
+                    <p>Category: <span id="currentCategory">N/A</span></p>
+                </div>
+
+                <audio id="audioPlayer" controls></audio>
+                <div class="custom-controls">
+                    <button id="prevBtn">&lt;&lt;</button>
+                    <button id="playPauseBtn">Play</button>
+                    <button id="nextBtn">&gt;&gt;</button>
+                    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+                 </div>
+
+
+                <h2>Queue</h2>
+                <ul id="queueList" class="droppable">
+                    </ul>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- YouTube Request Modal -->
+    <div id="youtubeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Add YouTube Request</h2>
+            <div class="form-group">
+                <label for="youtubeUrl">YouTube URL:</label>
+                <input type="url" id="youtubeUrl" placeholder="Paste YouTube link here">
+            </div>
+            <div class="form-group">
+                 <label for="youtubeSongName">Song Name:</label>
+                 <input type="text" id="youtubeSongName" placeholder="Enter song name (e.g., from video title)">
+             </div>
+            <div class="form-group">
+                <label for="youtubeCategory">Category:</label>
+                <input list="youtubeCategoryList" id="youtubeCategory" placeholder="Select or type new category">
+                <datalist id="youtubeCategoryList">
+                    <!-- Options will be populated by JS -->
+                </datalist>
+            </div>
+            <div class="modal-actions">
+                <button id="addYoutubeToQueue">Add to Queue</button>
+                <button id="addYoutubeNext">Add Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- YouTube Player Placeholder -->
+    <div id="youtubePlayerContainer" style="position: fixed; bottom: -9999px; left: -9999px;">
+        <div id="youtubePlayer"></div>
+    </div>
+
+</body>
+</html>
