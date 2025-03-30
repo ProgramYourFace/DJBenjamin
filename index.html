@@ -12,9 +12,9 @@
         <header>
             <h1>Music Player</h1>
             <div class="controls-top">
+                <button id="addYoutubeRequest" class="button icon-button youtube-button" title="Add a YouTube video to the queue"><i class="fab fa-youtube"></i></button>
                 <label for="folderInput" class="button">Select Music Folder</label>
                 <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
-                <button id="addYoutubeRequest">Add YouTube Request</button>
                 <button id="openPreview">Open Preview Window</button>
             </div>
             <div class="theme-controls">
@@ -47,14 +47,22 @@
                     <p>Category: <span id="currentCategory">N/A</span></p>
                 </div>
 
-                <audio id="audioPlayer" controls></audio>
+                <audio id="audioPlayer" preload="metadata"></audio>
+                
+                <!-- Custom Timeline -->
+                <div id="customTimelineContainer" class="timeline-container">
+                    <span id="currentTimeDisplay" class="time-display">0:00</span>
+                    <input type="range" id="timelineSlider" class="timeline-slider" value="0" min="0" max="100" step="0.1">
+                    <span id="durationDisplay" class="time-display">0:00</span>
+                </div>
+                
                 <div class="custom-controls">
-                    <button id="prevBtn">&lt;&lt;</button>
-                    <button id="playPauseBtn">Play</button>
-                    <button id="nextBtn">&gt;&gt;</button>
-                    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+                    <button id="prevBtn" title="Previous / Restart"><i class="fas fa-step-backward"></i></button>
+                    <button id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+                    <button id="nextBtn" title="Next"><i class="fas fa-step-forward"></i></button>
+                    <i class="fas fa-volume-down volume-icon"></i>
+                    <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="1" title="Volume">
                  </div>
-
 
                 <h2>Queue</h2>
                 <ul id="queueList" class="droppable">

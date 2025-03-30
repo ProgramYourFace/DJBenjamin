@@ -30,6 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const addYoutubeToQueueBtn = document.getElementById('addYoutubeToQueue');
   const addYoutubeNextBtn = document.getElementById('addYoutubeNext');
 
+  // Custom Timeline elements
+  const timelineContainer = document.getElementById('customTimelineContainer');
+  const timelineSlider = document.getElementById('timelineSlider');
+  const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+  const durationDisplay = document.getElementById('durationDisplay');
+  let timelineUpdateInterval = null; // To store the interval ID for YouTube updates
+  let isSeeking = false; // Flag to prevent updates during scrubbing
+
   // YouTube Player elements
   let ytPlayer;
 
@@ -75,20 +83,30 @@ document.addEventListener('DOMContentLoaded', () => {
   // The API calls this function when the player's state changes.
   function onPlayerStateChange(event) {
     console.log("YouTube Player State Change:", event.data);
+    const playIcon = playPauseBtn.querySelector('i');
+
     if (event.data == YT.PlayerState.ENDED) {
       console.log("YouTube video ended.");
+      if (playIcon) playIcon.className = 'fas fa-play'; // Set to play icon
+      clearTimelineUpdateInterval(); // Stop updates
       // If the currently playing song is a YouTube song, play the next in the main queue
       if (currentTrackIndex !== -1 && playQueue[currentTrackIndex].type === 'youtube') {
         // Use a small delay to prevent potential race conditions
         setTimeout(() => playNextInQueue(true), 100); 
       }
     } else if (event.data === YT.PlayerState.PLAYING) {
-        // Ensure the main audio player is paused when YouTube starts
-        if (!audioPlayer.paused) {
-            audioPlayer.pause();
-        }
+        if (playIcon) playIcon.className = 'fas fa-pause'; // Set to pause icon
+        if (!audioPlayer.paused) audioPlayer.pause();
+        startTimelineUpdates(); // Start polling for YT time
     } else if (event.data === YT.PlayerState.PAUSED) {
-        // Optional: Could potentially resume local audio if YT pauses, but might be complex
+        if (playIcon) playIcon.className = 'fas fa-play'; // Set to play icon
+        clearTimelineUpdateInterval(); // Stop updates
+    } else if (event.data === YT.PlayerState.BUFFERING) {
+         clearTimelineUpdateInterval(); // Stop updates during buffering
+    } else if (event.data === YT.PlayerState.CUED) {
+        if (playIcon) playIcon.className = 'fas fa-play'; // Set to play icon
+        clearTimelineUpdateInterval(); // Stop updates
+        updateTimelineDisplay(); // Update display once when cued
     }
   }
 
@@ -106,8 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
   songList.addEventListener('click', handleSongClick); // Using event delegation
   queueList.addEventListener('click', handleQueueClick); // Using event delegation
   audioPlayer.addEventListener('ended', () => playNextInQueue(true)); // true = song ended naturally
-  audioPlayer.addEventListener('play', () => playPauseBtn.textContent = 'Pause');
-  audioPlayer.addEventListener('pause', () => playPauseBtn.textContent = 'Play');
+  audioPlayer.addEventListener('play', () => playPauseBtn.querySelector('i').className = 'fas fa-pause');
+  audioPlayer.addEventListener('pause', () => playPauseBtn.querySelector('i').className = 'fas fa-play');
   audioPlayer.addEventListener('volumechange', () => volumeSlider.value = audioPlayer.volume);
 
 
@@ -283,6 +301,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   });
 
+  // Timeline Event Listeners
+  timelineSlider.addEventListener('input', handleTimelineScrub);
+  timelineSlider.addEventListener('mousedown', () => { isSeeking = true; }); // Pause updates while scrubbing
+  timelineSlider.addEventListener('mouseup', () => { isSeeking = false; });
+
+  // Update audio player time display on timeupdate
+  audioPlayer.addEventListener('timeupdate', updateTimelineDisplay);
+  audioPlayer.addEventListener('loadedmetadata', updateTimelineDisplay); // Update duration when metadata loads
+  audioPlayer.addEventListener('play', () => {
+      playPauseBtn.querySelector('i').className = 'fas fa-pause';
+      clearTimelineUpdateInterval(); // Ensure YT interval is cleared
+  });
+  audioPlayer.addEventListener('pause', () => {
+      playPauseBtn.querySelector('i').className = 'fas fa-play';
+  });
 
   // --- Functions ---
 
@@ -514,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
            audioPlayer.pause();
            audioPlayer.style.display = 'block'; // Show local player when queue ends
            if (ytPlayer && typeof ytPlayer.stopVideo === 'function') ytPlayer.stopVideo(); // Stop YouTube player
+           clearTimelineUpdateInterval(); // Clear interval
            currentTrackIndex = -1;
            currentSongDisplay.textContent = 'None';
            currentCategoryDisplay.textContent = 'N/A';
@@ -524,12 +558,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       currentTrackIndex = index;
       const song = playQueue[currentTrackIndex];
+      timelineContainer.style.display = 'flex'; // Show timeline
 
       console.log(`Attempting to play: ${song.name} (Type: ${song.type || 'local'})`);
       currentSongDisplay.textContent = song.name;
       currentCategoryDisplay.textContent = song.category;
       updateQueueDisplay(); // Update highlighting
       updatePreviewData(); // Send data to preview window
+
+      clearTimelineUpdateInterval(); // Clear previous interval
 
       if (song.type === 'youtube') {
           // Play YouTube video
@@ -546,13 +583,14 @@ document.addEventListener('DOMContentLoaded', () => {
               setTimeout(() => {
                   if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
                       ytPlayer.playVideo();
-                      playPauseBtn.textContent = 'Pause'; // Update button state
+                      playPauseBtn.querySelector('i').className = 'fas fa-play'; // Set to play initially
                   }    
               }, 500);
               
           } else {
               console.error("YouTube player is not ready or loadVideoById is not available.");
               audioPlayer.style.display = 'block'; // Show local player again on error
+              timelineContainer.style.display = 'none'; // Hide timeline on error
               playNextInQueue(true); // Attempt to skip to next
           }
       } else {
@@ -572,18 +610,20 @@ document.addEventListener('DOMContentLoaded', () => {
           audioPlayer.play()
               .then(() => {
                   console.log(`Playing local file: ${song.name} from ${song.category}`);
-                  playPauseBtn.textContent = 'Pause'; // Update button state
+                  playPauseBtn.querySelector('i').className = 'fas fa-pause'; // Set to pause initially
                   // Updates are already done above
               })
               .catch(error => {
                   console.error("Error playing local track:", error);
-                  playPauseBtn.textContent = 'Play'; // Update button state on error
+                  playPauseBtn.querySelector('i').className = 'fas fa-play'; // Set to play initially
+                  timelineContainer.style.display = 'none'; // Hide timeline on error
                   playNextInQueue(true); // Attempt to skip to next
               });
       }
   }
 
   function togglePlayPause() {
+      const playIcon = playPauseBtn.querySelector('i');
       if (currentTrackIndex === -1 && playQueue.length > 0) {
            // If nothing selected, play first in queue
            playTrack(0);
@@ -595,10 +635,10 @@ document.addEventListener('DOMContentLoaded', () => {
                    const playerState = ytPlayer.getPlayerState();
                    if (playerState === YT.PlayerState.PLAYING) {
                        ytPlayer.pauseVideo();
-                       playPauseBtn.textContent = 'Play'; // Update button text
+                       playPauseBtn.querySelector('i').className = 'fas fa-play'; // Set to play initially
                    } else if (playerState === YT.PlayerState.PAUSED || playerState === YT.PlayerState.CUED) {
                        ytPlayer.playVideo();
-                       playPauseBtn.textContent = 'Pause'; // Update button text
+                       playPauseBtn.querySelector('i').className = 'fas fa-pause'; // Set to pause initially
                    }
                    // Note: We might need to handle other states like BUFFERING or ENDED if necessary
                } else {
@@ -608,10 +648,10 @@ document.addEventListener('DOMContentLoaded', () => {
                // Control Local Audio Player
                if (audioPlayer.paused) {
                    audioPlayer.play().catch(e => console.error("Play error:", e));
-                   // Event listener already updates button text
+                   // Icon updated by event listener
                } else {
                    audioPlayer.pause();
-                   // Event listener already updates button text
+                   // Icon updated by event listener
                }
            }
        } else {
@@ -877,6 +917,99 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {
            console.error("Error loading theme from localStorage:", e);
       }
+  }
+
+  // --- Timeline Functions ---
+  function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return '0:00';
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+
+  function updateTimelineDisplay() {
+    if (isSeeking) return; // Don't update UI while user is scrubbing
+
+    let currentTime = 0;
+    let duration = 0;
+    const song = currentTrackIndex !== -1 ? playQueue[currentTrackIndex] : null;
+
+    if (song) {
+        if (song.type === 'youtube' && ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+            currentTime = ytPlayer.getCurrentTime();
+            duration = ytPlayer.getDuration();
+        } else if (song.type !== 'youtube' && audioPlayer) {
+            currentTime = audioPlayer.currentTime;
+            duration = audioPlayer.duration;
+        }
+    }
+    
+    // Handle cases where duration might be NaN or Infinity
+    if (isNaN(duration) || !isFinite(duration)) {
+        duration = 0;
+    }
+    if (isNaN(currentTime) || currentTime < 0) {
+        currentTime = 0;
+    }
+    
+    // Prevent current time exceeding duration visually
+    currentTime = Math.min(currentTime, duration);
+
+    currentTimeDisplay.textContent = formatTime(currentTime);
+    durationDisplay.textContent = formatTime(duration);
+    timelineSlider.value = duration > 0 ? (currentTime / duration) * 100 : 0;
+    // Update slider background fill (optional visual enhancement)
+    const percentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+    timelineSlider.style.background = `linear-gradient(to right, var(--primary-color) ${percentage}%, rgba(255, 255, 255, 0.2) ${percentage}%)`;
+  }
+
+  function resetTimelineDisplay() {
+      currentTimeDisplay.textContent = '0:00';
+      durationDisplay.textContent = '0:00';
+      timelineSlider.value = 0;
+      timelineSlider.style.background = `rgba(255, 255, 255, 0.2)`;
+  }
+
+  function handleTimelineScrub(event) {
+    if (currentTrackIndex === -1) return;
+    
+    const song = playQueue[currentTrackIndex];
+    const sliderValue = event.target.value; // Value is 0-100
+    let seekTime = 0;
+
+    if (song.type === 'youtube' && ytPlayer && typeof ytPlayer.getDuration === 'function') {
+        const duration = ytPlayer.getDuration();
+        if (duration > 0) {
+            seekTime = (sliderValue / 100) * duration;
+            ytPlayer.seekTo(seekTime, true); // Seek and allow resume
+            updateTimelineDisplay(); // Update UI immediately after scrub
+        }
+    } else if (song.type !== 'youtube' && audioPlayer && isFinite(audioPlayer.duration)) {
+        const duration = audioPlayer.duration;
+        if (duration > 0) {
+            seekTime = (sliderValue / 100) * duration;
+            audioPlayer.currentTime = seekTime;
+            updateTimelineDisplay(); // Update UI immediately after scrub
+        }
+    }
+  }
+
+  function startTimelineUpdates() {
+    clearTimelineUpdateInterval(); // Clear any existing interval
+    if (currentTrackIndex !== -1 && playQueue[currentTrackIndex].type === 'youtube') {
+        timelineUpdateInterval = setInterval(() => {
+            if (ytPlayer && typeof ytPlayer.getPlayerState === 'function' && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+                updateTimelineDisplay();
+            }
+        }, 250); // Poll YouTube time every 250ms
+    }
+  }
+
+  function clearTimelineUpdateInterval() {
+    if (timelineUpdateInterval) {
+        clearInterval(timelineUpdateInterval);
+        timelineUpdateInterval = null;
+    }
   }
 
 }); // End DOMContentLoaded

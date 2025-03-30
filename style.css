@@ -46,6 +46,7 @@ header {
 header h1 {
   color: var(--primary-color);
   margin-bottom: 10px; /* Add space below title */
+  margin-right: 20px; /* Add space between title and controls */
 }
 
 .controls-top {
@@ -75,7 +76,6 @@ input[type="color"] {
   cursor: pointer;
   border-radius: 4px;
 }
-
 
 .button, button {
   background-color: var(--primary-color);
@@ -217,14 +217,66 @@ audio {
 .custom-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center; /* Center the main controls */
+  gap: 15px; /* Slightly larger gap */
   margin-bottom: 20px;
 }
 
-#volumeSlider {
+.custom-controls button {
+  background-color: transparent;
+  border: none;
+  color: var(--text-color);
+  font-size: 1.5em; /* Larger icons */
+  padding: 5px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.custom-controls button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--primary-color);
+}
+
+.volume-icon {
+  margin-left: auto; /* Push volume controls to the right */
+  opacity: 0.7;
+  margin-right: 5px;
+}
+
+.volume-slider {
+  width: 100px; /* Fixed width for volume slider */
+  cursor: pointer;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  outline: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--primary-color);
+  border-radius: 50%;
   cursor: pointer;
 }
 
+.volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
 
 /* Queue Drag and Drop Styling */
 #queueList li {
@@ -381,3 +433,78 @@ audio {
   gap: 10px;
   margin-top: 20px;
 }
+
+/* Custom Timeline Styling */
+.timeline-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.time-display {
+  font-size: 0.85em;
+  min-width: 40px; /* Prevent layout shifts */
+  text-align: center;
+  opacity: 0.8;
+}
+
+.timeline-slider {
+  flex-grow: 1;
+  cursor: pointer;
+  height: 8px;
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  outline: none;
+}
+
+/* Style the thumb (handle) for WebKit browsers (Chrome, Safari) */
+.timeline-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Style the thumb for Firefox */
+.timeline-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* General Icon Button Style */
+.icon-button {
+    padding: 10px 12px; /* Adjust padding to match standard buttons */
+    font-size: 1.2em; /* Slightly smaller icon to fit */
+    /* Keep other relevant icon styles like transparent bg if needed, or let .button style override */
+}
+
+/* Remove background/border overrides if inheriting from .button */
+.icon-button.youtube-button {
+    background-color: var(--primary-color); /* Match button background */
+    border: none; /* Match button border */
+    color: #FF0000; /* Keep YouTube Red icon color */
+    opacity: 1; /* Full opacity */
+    /* Ensure consistent height/line-height if needed */
+    display: inline-flex; /* Align icon nicely */
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-button.youtube-button:hover {
+    background-color: var(--secondary-color); /* Use standard button hover */
+    color: #ff4d4d; /* Keep icon hover color */
+}
+
+/* Remove Specific YouTube Button Style if not needed */
+/* .youtube-button { ... } */
+/* .youtube-button:hover { ... } */
